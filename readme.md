@@ -7,8 +7,8 @@ A Python script to orchestrate a group of multiple ChatGPT instances.
 - Python 3
 - Libraries:
   ```
-openai
-rich
+  openai
+  rich
   ```
 
 #### Config:
