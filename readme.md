@@ -13,12 +13,16 @@ A Python script to orchestrate a group of multiple ChatGPT instances.
 
 #### Config:
 
-Create a file called `config.json` in the root directory. Example config:
+Create a file called `config.json` in the root directory.  
+The following example config contains all of the understood options,
+but only the api key is required.
 
 ```json
 {
+    "api_key": "...",
     "organization": "org-...",
-    "api_key": "..."
+    "max_tokens": 1024,
+    "verbose": false
 }
 ```
 

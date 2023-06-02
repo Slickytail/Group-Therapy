@@ -6,6 +6,7 @@ from rich import print
 #import readline
 
 MAX_TOKENS = 1024
+VERBOSE = False
 
 @dataclass
 class Agent:
@@ -69,19 +70,22 @@ def chat_loop(speakers, planner = None, judge = None):
                 # the judge might write some text before the json
                 # so we split on { and then grab everything after that.
                 judgement_json = json.loads("{" + judgement.split("{", 1)[1])
-                
-                message = suggestions[int(judgement_json.get("choice", 0))]
+                msg_index = int(judgement_json.get("choice", 0))
+                message = suggestions[msg_index]
+                # for debugging and analysis, print the name of the agent that generated the chosen message
+                if VERBOSE:
+                    print(f"[red] Judge : Chose {speakers[msg_index // 2].name} [/red]")
             # errors that can happen here:
             #   - indexerror: the judge chose a message that didn't exist
             #   - json error: the judge didn't write valid json
             # if either of these happens, 
-            except:
-                print("[red] Judge : Error [/red]")
+            except Exception as e:
+                print(f"[red] Judge : {e} [/red]")
                 message = suggestions[0]
         else:
             message = suggestions[0]
         # pretty-print the message
-        print(f"\n[green] Helper [/green][grey85]:[/grey85] {message} \n")
+        print(f"\n[on bright_black][green] Helper [/green][grey85]:[/grey85] [white on bright_black]{message}[/on bright_black] \n")
         # add the message to the history
         messages.append({"role": "assistant", "content": message})
 
@@ -130,7 +134,9 @@ if __name__ == "__main__":
         if "organization" in config:
             openai.organization = config["organization"]
 
+        # other misc config
         MAX_TOKENS = config.get("max_tokens", MAX_TOKENS)
+        VERBOSE = config.get("verbose", VERBOSE)
 
     # read the agent config
     with open("agents.json") as f:
