@@ -17,7 +17,7 @@
             "behavior": "speaker",
             
             "temperature": 1.5,
-            "top_p": 0.9,
+            "top_p": 0.99,
             "presence_penalty": 0.2,
             "frequency_penalty": 0.5
         },
@@ -27,7 +27,7 @@
             "prompt_path": "prompts/judge.md",
             "behavior": "judge",
 
-            "temperature": 0.5
+            "temperature": 0
         }
     ]
 }

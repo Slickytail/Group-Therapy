@@ -3,6 +3,7 @@ import json
 from itertools import chain
 from dataclasses import dataclass
 from rich import print
+#import readline
 
 MAX_TOKENS = 1024
 
@@ -44,6 +45,8 @@ def chat_loop(speakers, planner = None, judge = None):
     messages = []
     while True:
         # start by getting input from the user
+        # flush stdin, otherwise any accidental newlines etc could end up sending the messagebefore anything is typed.
+        flush_input()
         # because we are using rich, we have to print first, and then call input()
         print(f"[green] >>> [/green][grey85]:[/grey85]", end=" ")
         user_message = input()
@@ -63,7 +66,7 @@ def chat_loop(speakers, planner = None, judge = None):
                                         }]
             judgement = chat_step(judge_history, judge)[0]
             try:
-                # The judge might write some notes before it outputs its json.
+                # the judge might write some text before the json
                 # so we split on { and then grab everything after that.
                 judgement_json = json.loads("{" + judgement.split("{", 1)[1])
                 
@@ -104,6 +107,16 @@ def chat_step(history, agent):
     )
 
     return list(m["message"]["content"] for m in response["choices"])
+
+# Thanks stackoverflow
+def flush_input():
+    try:
+        import msvcrt # for windows
+        while msvcrt.kbhit():
+            msvcrt.getch()
+    except ImportError:
+        import sys, termios    # for linux/unix
+        termios.tcflush(sys.stdin, termios.TCIOFLUSH)
 
 
 if __name__ == "__main__":

@@ -30,9 +30,4 @@ What thoughts come to mind when you think about catsitting, car issues, and camp
 
 
 [Assistant]
-Therapist 0 uses varied vocabulary, asks insightful questions, and reassures the client that their feelings are valid. Score: 9/10
-Therapist 1 only offers a direct solution to one problem, and does not take into account the client's feelings. Score: 4/10
-Therapist 2 responds to the client's feelings in a similar manner to therapist 0, but their suggestions and questions are vague. Score: 6/10
-Therapist 3 quotes the client's problems verbatim, which leads to them sounding very robotic. Score: 6/10
-
 { "choice": 0 }
