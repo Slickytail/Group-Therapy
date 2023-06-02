@@ -4,7 +4,12 @@ A Python script to orchestrate a group of multiple ChatGPT instances.
 
 #### Requirements:
 
-The `openai` python library.
+- Python 3
+- Libraries:
+  ```
+openai
+rich
+  ```
 
 #### Config:
 
