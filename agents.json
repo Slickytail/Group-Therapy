@@ -1,0 +1,8 @@
+{
+    "agents": [
+        {
+            "name": "pessia",
+            "prompt": "pessia.md"
+        }
+    ]
+}
