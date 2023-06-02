@@ -1,7 +1,8 @@
 import openai
 import json
+from itertools import chain
 from dataclasses import dataclass
-
+from rich import print
 
 MAX_TOKENS = 1024
 
@@ -36,19 +37,23 @@ class Agent:
         return self._prompt
 
 
-def chat_loop(speaker, planner = None, judge = None):
+def chat_loop(speakers, planner = None, judge = None):
     """
     The main chat loop. It will keep running until KeyboardInterrupt is raised.
     """
     messages = []
     while True:
         # start by getting input from the user
-        user_message = input(f">>> : ")
+
+        print(f"[green] >>> [/green][grey85]:[/grey85]", end=" ")
+        user_message = input()
         messages.append({"role": "user", "content": user_message})
 
-        # get the next batch of messages from the speaker
-        suggestions = chat_step(messages, speaker)
-        # if there's a judge, get their input
+        # Get the next batch of messages from the speakers
+        # TODO: if no judge, only do one speaker.
+        suggestions = list(chain(*(chat_step(messages, speaker) for speaker in speakers)))
+
+        # Judge Pass: pick between a batch of messages
         if len(suggestions) > 1 and judge is not None:
             judge_history = messages + [{"role": "system",
                                         "content": "\n".join(f"(Therapist {i} \n {s}" for i, s in enumerate(suggestions))}]
@@ -57,12 +62,12 @@ def chat_loop(speaker, planner = None, judge = None):
                 judgement_json = json.loads("{" + judgement.split("{", 1)[1])
                 
                 message = suggestions[int(judgement_json.get("choice", 0))]
-            except Exception as e:
+            except:
                 message = suggestions[0]
         else:
             message = suggestions[0]
         # print the message
-        print(f"\n{speaker.name} : {message} \n")
+        print(f"\n[green] Helper [/green][grey85]:[/grey85] {message} \n")
         # add the message to the history
         messages.append({"role": "assistant", "content": message})
 
@@ -84,13 +89,14 @@ def chat_step(history, agent):
         frequency_penalty = agent.frequency_penalty,
         presence_penalty = agent.presence_penalty,
         # todo: use streaming
-        n = 3
+        n = 2
     )
 
     return list(m["message"]["content"] for m in response["choices"])
 
 
 if __name__ == "__main__":
+
     # read the API key from the file
     with open("config.json") as f:
         config = json.load(f)
@@ -107,8 +113,7 @@ if __name__ == "__main__":
         agents_json = json.load(f).get("agents", [])
         agents = [Agent(**agent) for agent in agents_json]
 
-    # just for testing, we"ll pick the first speaker and no advisors
-    agent = next(filter(lambda a: a.behavior == "speaker", agents))
+    speakers = list(filter(lambda a: a.behavior == "speaker", agents))
     judge = next(filter(lambda a: a.behavior == "judge", agents))
-    chat_loop(speaker=agent, judge=judge)
+    chat_loop(speakers, judge=judge)
     
