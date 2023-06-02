@@ -14,7 +14,7 @@ class Agent:
     and how its output is displyed, and sampling parameters.
     """
     name: str
-    # the full system prompt to use for the agent
+    # file containing the full system prompt to use for the agent
     prompt_path: str
     # the type of the agent: speaker | supervisor | planner | judge
     behavior: str
@@ -28,7 +28,7 @@ class Agent:
     @property
     def prompt(self) -> str:
         """
-        Returns the prompt to be sent to the API.
+        Returns the text of the agent's system prompt.
         """
         # If we haven"t read the prompt from the file yet, do it now
         if not hasattr(self, "_prompt"):
@@ -44,29 +44,40 @@ def chat_loop(speakers, planner = None, judge = None):
     messages = []
     while True:
         # start by getting input from the user
-
+        # because we are using rich, we have to print first, and then call input()
         print(f"[green] >>> [/green][grey85]:[/grey85]", end=" ")
         user_message = input()
+
         messages.append({"role": "user", "content": user_message})
 
-        # Get the next batch of messages from the speakers
-        # TODO: if no judge, only do one speaker.
+        # Speaker Pass: get batches of messages from the speakers
+        # and flatten the list of lists into a single list
         suggestions = list(chain(*(chat_step(messages, speaker) for speaker in speakers)))
+        # TODO: if no judge, only do one speaker.
 
         # Judge Pass: pick between a batch of messages
         if len(suggestions) > 1 and judge is not None:
+            # judge read the entire history, plus a system message containing the proposed messages
             judge_history = messages + [{"role": "system",
-                                        "content": "\n".join(f"(Therapist {i} \n {s}" for i, s in enumerate(suggestions))}]
+                                         "content": "\n".join(f"(Therapist {i}) \n {s}" for i, s in enumerate(suggestions))
+                                        }]
             judgement = chat_step(judge_history, judge)[0]
             try:
+                # The judge might write some notes before it outputs its json.
+                # so we split on { and then grab everything after that.
                 judgement_json = json.loads("{" + judgement.split("{", 1)[1])
                 
                 message = suggestions[int(judgement_json.get("choice", 0))]
+            # errors that can happen here:
+            #   - indexerror: the judge chose a message that didn't exist
+            #   - json error: the judge didn't write valid json
+            # if either of these happens, 
             except:
+                print("[red] Judge : Error [/red]")
                 message = suggestions[0]
         else:
             message = suggestions[0]
-        # print the message
+        # pretty-print the message
         print(f"\n[green] Helper [/green][grey85]:[/grey85] {message} \n")
         # add the message to the history
         messages.append({"role": "assistant", "content": message})
@@ -111,8 +122,10 @@ if __name__ == "__main__":
     # read the agent config
     with open("agents.json") as f:
         agents_json = json.load(f).get("agents", [])
+        # instantiate an Agent dataclass for each one
         agents = [Agent(**agent) for agent in agents_json]
 
+    # identify different kinds of agents
     speakers = list(filter(lambda a: a.behavior == "speaker", agents))
     judge = next(filter(lambda a: a.behavior == "judge", agents))
     chat_loop(speakers, judge=judge)
