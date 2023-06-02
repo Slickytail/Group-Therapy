@@ -6,6 +6,17 @@ A Python script to orchestrate a group of multiple ChatGPT instances.
 
 The `openai` python library.
 
+#### Config:
+
+Create a file called `config.json` in the root directory. Example config:
+
+```json
+{
+    "organization": "org-...",
+    "api_key": "..."
+}
+```
+
 #### Why?
 
 ChatGPT is good at conversation and reasoning, but it's very bad at planning.
