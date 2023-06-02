@@ -23,11 +23,11 @@
         },
 
         {
-            "name" : "creativity-judge",
+            "name" : "humanness-judge",
             "prompt_path": "prompts/judge.md",
             "behavior": "judge",
 
-            "temperature": 0.0
+            "temperature": 0.5
         }
     ]
 }
