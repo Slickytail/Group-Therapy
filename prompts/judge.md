@@ -1,6 +1,6 @@
 Read the following three responses given by therapist assistants to a client.
 Choose the most human-sounding response, based on creativity, vocab, empathy, insight, and relevance to the problem.
-After analyzing the responses, give your final choice in JSON format.
+Give your response in JSON format.
 
 Example:
 

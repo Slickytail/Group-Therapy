@@ -80,7 +80,7 @@ def chat_loop(speakers, planner = None, judge = None):
             #   - json error: the judge didn't write valid json
             # if either of these happens, 
             except Exception as e:
-                print(f"[red] Judge : {e} [/red]")
+                print(f"[red] Judge : {e} \n       : {judgement} [/red]")
                 message = suggestions[0]
         else:
             message = suggestions[0]
