@@ -44,6 +44,7 @@ def chat_loop(speakers, planner = None, judge = None):
     The main chat loop. It will keep running until KeyboardInterrupt is raised.
     """
     messages = []
+    decoder = json.JSONDecoder()
     while True:
         # start by getting input from the user
         # flush stdin, otherwise any accidental newlines etc could end up sending the messagebefore anything is typed.
@@ -67,9 +68,10 @@ def chat_loop(speakers, planner = None, judge = None):
                                         }]
             judgement = chat_step(judge_history, judge)[0]
             try:
-                # the judge might write some text before the json
+                # Sometimes, the judge's message will be something like "... { json } ..."
                 # so we split on { and then grab everything after that.
-                judgement_json = json.loads("{" + judgement.split("{", 1)[1])
+                # we also use decode_raw, which allows us to ignore extra input after the json
+                (judgement_json, _) = decoder.raw_decode("{" + judgement.split("{", 1)[1])
                 msg_index = int(judgement_json.get("choice", 0))
                 message = suggestions[msg_index]
                 # for debugging and analysis, print the name of the agent that generated the chosen message
@@ -80,7 +82,9 @@ def chat_loop(speakers, planner = None, judge = None):
             #   - json error: the judge didn't write valid json
             # if either of these happens, 
             except Exception as e:
-                print(f"[red] Judge : {e} \n       : {judgement} [/red]")
+                print(f"[red] Judge : {e} [/red]")
+                if VERBOSE:
+                    print(f"[red]       : judgement [/red]")
                 message = suggestions[0]
         else:
             message = suggestions[0]
