@@ -44,7 +44,6 @@ def chat_loop(speakers, planner = None, judge = None):
     The main chat loop. It will keep running until KeyboardInterrupt is raised.
     """
     messages = []
-    decoder = json.JSONDecoder()
     while True:
         # start by getting input from the user
         # flush stdin, otherwise any accidental newlines etc could end up sending the messagebefore anything is typed.
@@ -64,14 +63,12 @@ def chat_loop(speakers, planner = None, judge = None):
         if len(suggestions) > 1 and judge is not None:
             # judge read the entire history, plus a system message containing the proposed messages
             judge_history = messages + [{"role": "system",
-                                         "content": "\n".join(f"(Therapist {i}) \n {s}" for i, s in enumerate(suggestions))
+                                         "content": "\n".join(f"(Therapist {i}) \n{s}" for i, s in enumerate(suggestions))
                                         }]
             judgement = chat_step(judge_history, judge)[0]
             try:
-                # Sometimes, the judge's message will be something like "... { json } ..."
-                # so we split on { and then grab everything after that.
-                # we also use decode_raw, which allows us to ignore extra input after the json
-                (judgement_json, _) = decoder.raw_decode("{" + judgement.split("{", 1)[1])
+                # Decode the JSON part of the judge's message
+                judgement_json = safe_json_parse(judgement)
                 msg_index = int(judgement_json.get("choice", 0))
                 message = suggestions[msg_index]
                 # for debugging and analysis, print the name of the agent that generated the chosen message
@@ -80,7 +77,7 @@ def chat_loop(speakers, planner = None, judge = None):
             # errors that can happen here:
             #   - indexerror: the judge chose a message that didn't exist
             #   - json error: the judge didn't write valid json
-            # if either of these happens, 
+            # if either of these happens, give some debug output and just pick the first message
             except Exception as e:
                 print(f"[red] Judge : {e} [/red]")
                 if VERBOSE:
@@ -88,13 +85,14 @@ def chat_loop(speakers, planner = None, judge = None):
                 message = suggestions[0]
         else:
             message = suggestions[0]
+
         # pretty-print the message
         print(f"\n[on bright_black][green] Helper [/green][grey85]:[/grey85] [white on bright_black]{message}[/on bright_black] \n")
         # add the message to the history
         messages.append({"role": "assistant", "content": message})
 
 
-def chat_step(history, agent):
+def chat_step(history, agent, n = 2):
     """
     Call the OpenAI API with the given history and agent.
     """
@@ -111,13 +109,28 @@ def chat_step(history, agent):
         frequency_penalty = agent.frequency_penalty,
         presence_penalty = agent.presence_penalty,
         # todo: use streaming
-        n = 2
+        n = n
     )
 
     return list(m["message"]["content"] for m in response["choices"])
 
+def safe_json_parse(string: str):
+    """
+    Parses a string that *contains* a json blob.
+    """
+    decoder = json.JSONDecoder()
+    # so we split on { and then grab everything after that.
+    # we also use decode_raw, which allows us to ignore extra input after the json
+    (decoded, _) = decoder.raw_decode("{" + string.split("{", 1)[1])
+    return decoded
+
+
 # Thanks stackoverflow
 def flush_input():
+    """
+    Flushes all pending input from stdin.
+    Platform-agnostic.
+    """
     try:
         import msvcrt # for windows
         while msvcrt.kbhit():
