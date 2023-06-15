@@ -1,1 +1,5 @@
+# Makes it easy to avoid pushing API keys
 config.json
+
+__pycache__/
+*.py[cod]
