@@ -1,0 +1,3 @@
+# rich could actually be optional
+rich
+openai
