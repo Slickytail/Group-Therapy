@@ -43,7 +43,7 @@ def chat_loop(speakers, planner = None, judge = None):
         if len(suggestions) > 1 and judge is not None:
             # judge read the entire history, plus a system message containing the proposed messages
             judge_history = messages + [{"role": "system",
-                                         "content": "\n".join(f"(Therapist {i}) \n{s}" for i, s in enumerate(suggestions))
+                                         "content": "\n".join(f"(Helper {i}) \n{s}" for i, s in enumerate(suggestions))
                                         }]
             judgement = chat_step(judge_history, judge)[0]
             try:
@@ -84,10 +84,7 @@ def chat_step(history, agent, n = 1):
         messages = messages,
         max_tokens = MAX_TOKENS,
         # sampling behavior from the agent
-        temperature = agent.temperature,
-        top_p = agent.top_p,
-        frequency_penalty = agent.frequency_penalty,
-        presence_penalty = agent.presence_penalty,
+        **agent.sampling,
         # todo: use streaming
         n = n
     )

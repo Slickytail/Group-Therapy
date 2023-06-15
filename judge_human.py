@@ -31,7 +31,7 @@ def read_loop(conversation, speakers, judge):
             # Judge Pass: pick between a batch of messages
             # judge read the entire history, plus a system message containing the proposed messages
             judge_history = messages_up_to_now + [{"role": "system",
-                                         "content": "\n".join(f"(Therapist {i}) \n{s}" for i, s in enumerate(suggestions))
+                                         "content": "\n".join(f"(Helper {i}) \n{s}" for i, s in enumerate(suggestions))
                                         }]
             judgement = chat_step(judge_history, judge)[0]
             print(f"[red] Judge : {judgement} \n[/red]")

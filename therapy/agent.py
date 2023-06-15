@@ -16,10 +16,7 @@ class Agent:
     behavior: str
 
     # sampling parameters to be sent to the API
-    temperature: float = 1.0
-    top_p: float = 1.0
-    frequency_penalty: float = 0.0
-    presence_penalty: float = 0.0
+    sampling: dict
 
     @property
     def prompt(self) -> str:

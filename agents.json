@@ -5,10 +5,12 @@
             "prompt_path": "prompts/pessia.md",
             "behavior": "speaker",
             
-            "temperature": 1.8,
-            "top_p": 0.95,
-            "frequency_penalty": 0.5,
-            "presence_penalty": 0.2
+            "sampling": {
+                "temperature": 1.8,
+                "top_p": 0.95,
+                "frequency_penalty": 0.2,
+                "presence_penalty": 0.1
+            }
         },
 
         {
@@ -16,10 +18,12 @@
             "prompt_path": "prompts/adrian.md",
             "behavior": "speaker",
             
-            "temperature": 1.8,
-            "top_p": 0.95,
-            "frequency_penalty": 0.5,
-            "presence_penalty": 0.2
+            "sampling": {
+                "temperature": 1.8,
+                "top_p": 0.95,
+                "frequency_penalty": 0.2,
+                "presence_penalty": 0.1
+            }
         },
 
         {
@@ -27,7 +31,9 @@
             "prompt_path": "prompts/judge-numeric.md",
             "behavior": "judge",
 
-            "temperature": 0
+            "sampling": {
+                "temperature": 0
+            }
         },
 
         {
@@ -35,7 +41,14 @@
             "prompt_path": "prompts/judge-analytic.md",
             "behavior": "judge",
 
-            "temperature": 0.7
+            "sampling": {
+                "temperature": 0.7,
+                "frequency_penalty": 0.1,
+                "presence_penalty": 0.3,
+                "logit_bias": {
+                    "7": -3
+                }
+            }
         }
     ]
 }
