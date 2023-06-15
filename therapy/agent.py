@@ -48,11 +48,13 @@ class AgentList:
     def __iter__(self):
         return iter(self.agents)
 
-    def get(self, behavior: str) -> Union[Agent, None]:
+    def get(self, behavior = None, name = None) -> Union[Agent, None]:
         """
-        Returns the first agent with the given behavior, or None if there is none.
+        Returns the first agent with the given behavior or name, or None if there is none.
         """
-        return next(self._filter(behavior), None)
+        if behavior is not None:
+            return next(self._filter(behavior), None)
+        return next(filter(lambda a: a.name == name, self.agents), None)
 
     def get_all(self, behavior: str) -> list:
         """

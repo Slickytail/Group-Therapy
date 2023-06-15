@@ -24,6 +24,16 @@ def chat_loop(speakers, planner = None, judge = None):
 
         messages.append({"role": "user", "content": user_message})
 
+        # Planner Pass: ask the planner to switch modes
+        if planner is not None:
+            planner_message = chat_step(messages, planner)[0]
+            # for debugging and analysis, output the direction given by the planner.
+            if VERBOSE:
+                print(f"[blue] Planner : {planner_message} [/blue]")
+            # if the planner didn't include the nop token, then we need to switch modes
+            if "=" not in planner_message:
+                messages.append({"role": "system", "content": f"Supervisor: {planner_message}"})
+
         # Speaker Pass: get batches of messages from the speakers
         # and flatten the list of lists into a single list
         suggestions = list(chain(*(chat_step(messages, speaker) for speaker in speakers)))
@@ -104,6 +114,7 @@ if __name__ == "__main__":
 
     # identify different kinds of agents
     speakers = agents.get_all("speaker")
-    judge = agents.get("judge")
+    judge = agents.get(behavior = "judge")
+    planner = agents.get(behavior = "planner")
     chat_loop(speakers, judge=judge)
     
